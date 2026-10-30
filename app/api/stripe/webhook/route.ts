@@ -4,9 +4,11 @@ import Stripe from "stripe";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const clean = (v: string | undefined) => (v ?? "").replace(/[^\x21-\x7E]/g, "");
+
 export async function POST(request: NextRequest) {
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secretKey = clean(process.env.STRIPE_SECRET_KEY);
+  const webhookSecret = clean(process.env.STRIPE_WEBHOOK_SECRET);
   const signature = request.headers.get("stripe-signature");
 
   if (!secretKey || !webhookSecret || !signature) {
