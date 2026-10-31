@@ -20,6 +20,7 @@ export default function Connexion() {
         emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     });
+    if (error)alert(error.message);
     setEtat(error ? "erreur" : "envoye");
   }
 
