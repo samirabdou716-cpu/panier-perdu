@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const autorisation = request.headers.get("authorization");
+  if (autorisation !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ erreur: "non autorisé" }, { status: 401 });
+  }
+
   const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
