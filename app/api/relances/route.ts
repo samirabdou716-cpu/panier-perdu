@@ -26,6 +26,7 @@ export async function GET() {
       .from("relances")
       .select("id")
       .eq("panier_id", panier.id)
+      .eq("numero", 1)
       .limit(1);
 
     if (deja && deja.length > 0) continue;
@@ -33,6 +34,15 @@ export async function GET() {
     const boutique: any = panier.boutiques;
     const nomBoutique = boutique?.nom_boutique ?? "Votre boutique";
     const prenom = panier.prenom ?? "";
+    const produits = (panier.produits ?? "des articles").toLowerCase();
+
+    const { error: erreurNote } = await supabase
+      .from("relances")
+      .insert({ panier_id: panier.id, numero: 1 });
+
+    if (erreurNote) {
+      return NextResponse.json({ erreur: erreurNote.message }, { status: 500 });
+    }
 
     const reponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -44,13 +54,19 @@ export async function GET() {
         from: `${nomBoutique} <onboarding@resend.dev>`,
         to: panier.email_client,
         subject: "Vous avez oublié quelque chose",
-        html: `<p>Bonjour ${prenom},</p><p>Vous avez laissé ${panier.produits ?? "des articles"} dans votre panier.</p><p><a href="${panier.url_reprise}">Reprendre mon panier</a></p><p>${nomBoutique}</p>`,
+        html: `<p>Bonjour ${prenom},</p><p>Vous avez laissé ${produits} dans votre panier.</p><p><a href="${panier.url_reprise}">Reprendre mon panier</a></p><p>${nomBoutique}</p>`,
       }),
     });
 
-    if (!reponse.ok) continue;
+    if (!reponse.ok) {
+      await supabase
+        .from("relances")
+        .delete()
+        .eq("panier_id", panier.id)
+        .eq("numero", 1);
+      continue;
+    }
 
-    await supabase.from("relances").insert({ panier_id: panier.id });
     envoyes++;
   }
 
