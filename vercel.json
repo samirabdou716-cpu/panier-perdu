@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/shopify/sync",
+      "schedule": "0 8 * * *"
+    },
+    {
       "path": "/api/relances",
       "schedule": "0 9 * * *"
     }
