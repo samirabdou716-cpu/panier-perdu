@@ -18,8 +18,12 @@ const REQUETE = `
 `;
 
 export async function GET(request: Request) {
-  const autorisation = request.headers.get("authorization");
-  if (autorisation !== `Bearer ${process.env.CRON_SECRET}`) {
+  const { searchParams } = new URL(request.url);
+  const parEntete =
+    request.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
+  const parAdresse = searchParams.get("cle") === process.env.CRON_SECRET;
+
+  if (!parEntete && !parAdresse) {
     return NextResponse.json({ erreur: "non autorise" }, { status: 401 });
   }
 
@@ -61,6 +65,7 @@ export async function GET(request: Request) {
     }
 
     const paniers = corps.data?.abandonedCheckouts?.nodes ?? [];
+    messages.push(`${paniers.length} panier(s) lus chez Shopify`);
 
     for (const p of paniers) {
       if (p.completedAt || !p.customer?.email) continue;
