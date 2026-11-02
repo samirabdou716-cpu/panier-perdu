@@ -19,8 +19,12 @@ async function envoyerEmail(
 }
 
 export async function GET(request: Request) {
-  const autorisation = request.headers.get("authorization");
-  if (autorisation !== `Bearer ${process.env.CRON_SECRET}`) {
+  const { searchParams } = new URL(request.url);
+  const parEntete =
+    request.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
+  const parAdresse = searchParams.get("cle") === process.env.CRON_SECRET;
+
+  if (!parEntete && !parAdresse) {
     return NextResponse.json({ erreur: "non autorise" }, { status: 401 });
   }
 
@@ -58,9 +62,9 @@ export async function GET(request: Request) {
     const boutique: any = panier.boutiques;
     const nomBoutique = boutique?.nom_boutique ?? "Votre boutique";
     const codePromo = boutique?.code_promo ?? null;
-    const prenom = panier.prenom ?? "";
+    const prenom = panier.prenom ? ` ${panier.prenom}` : "";
     const produits = (panier.produits ?? "des articles").toLowerCase();
-    const expediteur = `${nomBoutique} <onboarding@resend.dev>`;
+    const expediteur = `${nomBoutique} <relance@panierperdu.org>`;
 
     if (!premiere) {
       const { error: erreurNote } = await supabase
@@ -74,7 +78,7 @@ export async function GET(request: Request) {
         panier.email_client,
         expediteur,
         "Vous avez oublié quelque chose",
-        `<p>Bonjour ${prenom},</p><p>Vous avez laissé ${produits} dans votre panier.</p><p><a href="${panier.url_reprise}">Reprendre mon panier</a></p><p>${nomBoutique}</p>`
+        `<p>Bonjour${prenom},</p><p>Vous avez laissé ${produits} dans votre panier.</p><p><a href="${panier.url_reprise}">Reprendre mon panier</a></p><p>${nomBoutique}</p>`
       );
 
       if (!ok) {
@@ -105,7 +109,7 @@ export async function GET(request: Request) {
         panier.email_client,
         expediteur,
         "Dernier rappel pour votre panier",
-        `<p>Bonjour ${prenom},</p><p>Votre panier avec ${produits} vous attend toujours.</p>${bloc}<p><a href="${panier.url_reprise}">Finaliser ma commande</a></p><p>${nomBoutique}</p>`
+        `<p>Bonjour${prenom},</p><p>Votre panier avec ${produits} vous attend toujours.</p>${bloc}<p><a href="${panier.url_reprise}">Finaliser ma commande</a></p><p>${nomBoutique}</p>`
       );
 
       if (!ok) {
