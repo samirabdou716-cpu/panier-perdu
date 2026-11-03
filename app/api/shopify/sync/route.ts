@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const parEntete =
     request.headers.get("authorization") === `Bearer ${process.env.CRON_SECRET}`;
-  const parAdresse = searchParams.get("cle") === process.env.CRON_SECRET;
+  const parAdresse = false;
 
   if (!parEntete && !parAdresse) {
     return NextResponse.json({ erreur: "non autorise" }, { status: 401 });

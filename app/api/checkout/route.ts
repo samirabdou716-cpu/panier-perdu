@@ -13,14 +13,6 @@ export async function GET(request: NextRequest) {
   const secretKey = clean(rawKey);
   const priceId = clean(rawPrice);
 
-  console.log("Diagnostic Stripe", {
-    cleLongueur: secretKey.length,
-    clePrefixe: secretKey.slice(0, 8),
-    cleNettoyee: (rawKey ?? "").length !== secretKey.length,
-    prixLongueur: priceId.length,
-    prixPrefixe: priceId.slice(0, 6),
-    prixNettoye: (rawPrice ?? "").length !== priceId.length,
-  });
 
   if (!secretKey || !priceId) {
     console.error("Variables Stripe manquantes");
