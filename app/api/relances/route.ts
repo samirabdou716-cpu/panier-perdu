@@ -41,6 +41,7 @@ export async function GET(request: Request) {
     .from("paniers")
     .select("id, email_client, prenom, produits, url_reprise, abandonne_le, boutiques(nom_boutique, code_promo)")
     .eq("recupere", false)
+    .not("email_client","is",null)
     .lt("abandonne_le", uneHeure);
 
   if (error) {
