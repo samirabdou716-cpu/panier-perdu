@@ -55,18 +55,18 @@ export default async function Espace() {
 
   const { data: paniers } = await admin
     .from("paniers")
-    .select("montant")
+    .select("montant_cents")
     .eq("boutique_id", boutique.id)
     .eq("recupere", true);
 
   const total = (paniers ?? []).reduce(
-    (somme, p) => somme + Number(p.montant ?? 0),
+    (somme, p) => somme + Number(p.montant_cents?? 0),
     0
   );
   const montantAffiche = new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
-  }).format(total);
+  }).format(total/100);
 
   return (
     <main
